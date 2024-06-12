@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disarm the Bomb</title>
+    <style>
+        /* Import a retro LCD font */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(145deg, #3a3a3a, #262626);
+            color: #0f0;
+            font-family: 'VT323', monospace;
+            margin: 0;
+        }
+        .dynamite {
+            position: relative;
+            width: 400px;
+            height: auto;
+            background-image: url('images/dynamite.png'); /* Dynamite image */
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border: 5px solid #333;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+        .panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #222;
+            border: 5px solid #333;
+            border-radius: 15px;
+            box-shadow: inset 5px 5px 15px rgba(0, 0, 0, 0.5), 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+        .numberContainer {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #111;
+            border-radius: 10px;
+            box-shadow: inset 5px 5px 10px #000, 5px 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .randomNumber {
+            font-size: 60px;
+            margin: 0 10px;
+            padding: 10px;
+            background: linear-gradient(145deg, #444, #222);
+            border: 3px solid #666;
+            border-radius: 5px;
+            text-align: center;
+            width: 60px;
+            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
+            color: #f00; /* Red for urgency */
+            text-shadow: 0 0 10px #f00;
+        }
+        #initialNumbers {
+            margin: 20px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #666;
+            background: linear-gradient(145deg, #444, #222);
+            color: #0f0;
+            width: 140px;
+            text-align: center;
+            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border: 2px solid #666;
+            background: linear-gradient(145deg, #444, #222);
+            color: #0f0;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0f0;
+            color: #222;
+        }
+        #timer {
+            font-size: 24px;
+            color: #f00; /* Red for countdown */
+            text-shadow: 0 0 10px #f00;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dynamite">
+        <div class="panel">
+            <div class="numberContainer">
+                <div id="randomNumber1" class="randomNumber">0</div>
+                <div id="randomNumber2" class="randomNumber">0</div>
+                <div id="randomNumber3" class="randomNumber">0</div>
+                <div id="randomNumber4" class="randomNumber">0</div>
+            </div>
+            <input type="text" id="initialNumbers" placeholder="Enter 4 digits (e.g., 1234)">
+            <button id="startButton" disabled>Start</button>
+            <div id="timer">Time Left: <span id="time">30</span> seconds</div>
+        </div>
+    </div>
+
+    <script>
+        // Ensure script runs after DOM is loaded
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const correctCode = "1234"; // Correct code to disarm
+            let timer;
+            const timeLimit = 30; // Time limit in seconds
+
+            // Function to start randomizing the numbers
+            function startRandomizing() {
+                for (let i = 1; i <= 4; i++) {
+                    const display = document.getElementById(`randomNumber${i}`);
+                    display.innerText = getRandomNumber(); // Initialize with a random number
+                    (function (i) {
+                        setInterval(() => {
+                            display.innerText = getRandomNumber();
+                        }, 1000);
+                    })(i);
+                }
+
+                // Start countdown timer
+                let timeLeft = timeLimit;
+                document.getElementById('time').innerText = timeLeft;
+
+                timer = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('time').innerText = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        alert('BOOM! The bomb has exploded!');
+                        location.reload(); // Reload the page to reset
+                    }
+                }, 1000);
+
+                // Check if the entered code is correct
+                document.getElementById('initialNumbers').addEventListener('input', (e) => {
+                    if (e.target.value === correctCode) {
+                        clearInterval(timer);
+                        alert('Disarmed! The bomb is safe.');
+                        document.getElementById('time').style.color = '#0f0'; // Change to green
+                        document.getElementById('timer').innerText = 'Bomb Disarmed';
+                    }
+                });
+            }
+
+            // Generate a random number between 0 and 9
+            function getRandomNumber() {
+                return Math.floor(Math.random() * 10);
+            }
+
+            // Automatically start randomizing numbers on page load
+            startRandomizing();
+        });
+    </script>
+</body>
+</html>
