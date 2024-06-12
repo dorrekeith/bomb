@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disarm the Bomb</title>
     <style>
-        /* Import a retro LCD font */
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         body {
@@ -23,7 +22,7 @@
             position: relative;
             width: 400px;
             height: auto;
-            background-image: url('images/dynamite.png'); /* Dynamite image */
+            background-image: url('images/dynamite.png');
             background-size: cover;
             background-position: center;
             padding: 20px;
@@ -65,7 +64,7 @@
             text-align: center;
             width: 60px;
             box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
-            color: #f00; /* Red for urgency */
+            color: #f00;
             text-shadow: 0 0 10px #f00;
         }
         #initialNumbers {
@@ -79,6 +78,14 @@
             text-align: center;
             box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
             border-radius: 5px;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
         button {
             padding: 10px 20px;
@@ -97,7 +104,7 @@
         }
         #timer {
             font-size: 24px;
-            color: #f00; /* Red for countdown */
+            color: #f00;
             text-shadow: 0 0 10px #f00;
             margin: 20px;
         }
@@ -112,32 +119,39 @@
                 <div id="randomNumber3" class="randomNumber">0</div>
                 <div id="randomNumber4" class="randomNumber">0</div>
             </div>
-            <input type="text" id="initialNumbers" placeholder="Enter 4 digits (e.g., 1234)">
-            <button id="startButton" disabled>Start</button>
+            <input type="number" id="initialNumbers" placeholder="4 Digit Code" maxlength="4">
+            <button id="startButton" disabled>DISARM</button>
             <div id="timer">Time Left: <span id="time">30</span> seconds</div>
         </div>
     </div>
 
     <script>
-        // Ensure script runs after DOM is loaded
         document.addEventListener('DOMContentLoaded', (event) => {
-            const correctCode = "1234"; // Correct code to disarm
+            let correctCode = generateRandomCode();
+            console.log(`Correct Code: ${correctCode}`); // For debugging purposes
             let timer;
-            const timeLimit = 30; // Time limit in seconds
+            const timeLimit = 30;
+            const intervals = [];
+            const displays = [];
+            const initialNumbers = [];
 
-            // Function to start randomizing the numbers
             function startRandomizing() {
+                let initialNumbersString = '';
+
                 for (let i = 1; i <= 4; i++) {
                     const display = document.getElementById(`randomNumber${i}`);
-                    display.innerText = getRandomNumber(); // Initialize with a random number
-                    (function (i) {
-                        setInterval(() => {
-                            display.innerText = getRandomNumber();
-                        }, 1000);
-                    })(i);
+                    displays.push(display);
+                    const initialNumber = getRandomNumber();
+                    initialNumbers.push(initialNumber);
+                    display.innerText = initialNumber;
+                    initialNumbersString += initialNumber;
+                    intervals.push(setInterval(() => {
+                        display.innerText = getRandomNumber();
+                    }, 1000));
                 }
 
-                // Start countdown timer
+                alert(`Initial numbers are: ${initialNumbersString}`);
+
                 let timeLeft = timeLimit;
                 document.getElementById('time').innerText = timeLeft;
 
@@ -147,28 +161,56 @@
 
                     if (timeLeft <= 0) {
                         clearInterval(timer);
+                        intervals.forEach(clearInterval);
                         alert('BOOM! The bomb has exploded!');
-                        location.reload(); // Reload the page to reset
+                        location.reload();
                     }
                 }, 1000);
 
-                // Check if the entered code is correct
                 document.getElementById('initialNumbers').addEventListener('input', (e) => {
-                    if (e.target.value === correctCode) {
-                        clearInterval(timer);
-                        alert('Disarmed! The bomb is safe.');
-                        document.getElementById('time').style.color = '#0f0'; // Change to green
-                        document.getElementById('timer').innerText = 'Bomb Disarmed';
+                    const value = e.target.value;
+                    if (value.length > 4) {
+                        e.target.value = value.slice(0, 4);
+                    }
+                });
+
+                document.getElementById('initialNumbers').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const enteredCode = e.target.value;
+                        checkCode(enteredCode);
+                        e.target.value = ''; // Clear the input box
                     }
                 });
             }
 
-            // Generate a random number between 0 and 9
+            function generateRandomCode() {
+                let code = '';
+                for (let i = 0; i < 4; i++) {
+                    code += getRandomNumber();
+                }
+                return code;
+            }
+
             function getRandomNumber() {
                 return Math.floor(Math.random() * 10);
             }
 
-            // Automatically start randomizing numbers on page load
+            function checkCode(enteredCode) {
+                for (let i = 0; i < 4; i++) {
+                    if (enteredCode[i] === correctCode[i] && parseInt(enteredCode[i]) === initialNumbers[i]) {
+                        displays[i].style.color = '#0f0';
+                        clearInterval(intervals[i]);
+                    }
+                }
+                if (enteredCode === correctCode) {
+                    clearInterval(timer);
+                    intervals.forEach(clearInterval);
+                    alert('Disarmed! The bomb is safe.');
+                    document.getElementById('time').style.color = '#0f0';
+                    document.getElementById('timer').innerText = 'Bomb Disarmed';
+                }
+            }
+
             startRandomizing();
         });
     </script>
