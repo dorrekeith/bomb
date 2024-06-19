@@ -4,111 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disarm the Bomb</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(145deg, #3a3a3a, #262626);
-            color: #0f0;
-            font-family: 'VT323', monospace;
-            margin: 0;
-        }
-        .dynamite {
-            position: relative;
-            width: 400px;
-            height: auto;
-            background-image: url('images/dynamite.png');
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-            border: 5px solid #333;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-        }
-        .panel {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: #222;
-            border: 5px solid #333;
-            border-radius: 15px;
-            box-shadow: inset 5px 5px 15px rgba(0, 0, 0, 0.5), 0 10px 20px rgba(0, 0, 0, 0.5);
-        }
-        .numberContainer {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #111;
-            border-radius: 10px;
-            box-shadow: inset 5px 5px 10px #000, 5px 5px 15px rgba(0, 0, 0, 0.5);
-        }
-        .randomNumber {
-            font-size: 60px;
-            margin: 0 10px;
-            padding: 10px;
-            background: linear-gradient(145deg, #444, #222);
-            border: 3px solid #666;
-            border-radius: 5px;
-            text-align: center;
-            width: 60px;
-            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
-            color: #f00;
-            text-shadow: 0 0 10px #f00;
-        }
-        #initialNumbers {
-            margin: 20px;
-            padding: 10px;
-            font-size: 18px;
-            border: 2px solid #666;
-            background: linear-gradient(145deg, #444, #222);
-            color: #0f0;
-            width: 140px;
-            text-align: center;
-            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
-            border-radius: 5px;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-        input[type=number]::-webkit-outer-spin-button,
-        input[type=number]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 18px;
-            border: 2px solid #666;
-            background: linear-gradient(145deg, #444, #222);
-            color: #0f0;
-            cursor: pointer;
-            transition: background-color 0.3s, color 0.3s;
-            box-shadow: inset 2px 2px 4px #000, 2px 2px 6px #000;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #0f0;
-            color: #222;
-        }
-        #timer {
-            font-size: 24px;
-            color: #f00;
-            text-shadow: 0 0 10px #f00;
-            margin: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="dynamite">
@@ -125,94 +21,13 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            let correctCode = generateRandomCode();
-            console.log(`Correct Code: ${correctCode}`); // For debugging purposes
-            let timer;
-            const timeLimit = 30;
-            const intervals = [];
-            const displays = [];
-            const initialNumbers = [];
+    <div class="popup" id="initialNumbersPopup">
+        <div>Initial Numbers</div>
+        <div id="popupNumbers"></div>
+        <input type="text" id="popupInput" placeholder="Enter Code">
+        <button id="popupSubmit">Submit</button>
+    </div>
 
-            function startRandomizing() {
-                let initialNumbersString = '';
-
-                for (let i = 1; i <= 4; i++) {
-                    const display = document.getElementById(`randomNumber${i}`);
-                    displays.push(display);
-                    const initialNumber = getRandomNumber();
-                    initialNumbers.push(initialNumber);
-                    display.innerText = initialNumber;
-                    initialNumbersString += initialNumber;
-                    intervals.push(setInterval(() => {
-                        display.innerText = getRandomNumber();
-                    }, 1000));
-                }
-
-                alert(`Initial numbers are: ${initialNumbersString}`);
-
-                let timeLeft = timeLimit;
-                document.getElementById('time').innerText = timeLeft;
-
-                timer = setInterval(() => {
-                    timeLeft--;
-                    document.getElementById('time').innerText = timeLeft;
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        intervals.forEach(clearInterval);
-                        alert('BOOM! The bomb has exploded!');
-                        location.reload();
-                    }
-                }, 1000);
-
-                document.getElementById('initialNumbers').addEventListener('input', (e) => {
-                    const value = e.target.value;
-                    if (value.length > 4) {
-                        e.target.value = value.slice(0, 4);
-                    }
-                });
-
-                document.getElementById('initialNumbers').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        const enteredCode = e.target.value;
-                        checkCode(enteredCode);
-                        e.target.value = ''; // Clear the input box
-                    }
-                });
-            }
-
-            function generateRandomCode() {
-                let code = '';
-                for (let i = 0; i < 4; i++) {
-                    code += getRandomNumber();
-                }
-                return code;
-            }
-
-            function getRandomNumber() {
-                return Math.floor(Math.random() * 10);
-            }
-
-            function checkCode(enteredCode) {
-                for (let i = 0; i < 4; i++) {
-                    if (enteredCode[i] === correctCode[i] && parseInt(enteredCode[i]) === initialNumbers[i]) {
-                        displays[i].style.color = '#0f0';
-                        clearInterval(intervals[i]);
-                    }
-                }
-                if (enteredCode === correctCode) {
-                    clearInterval(timer);
-                    intervals.forEach(clearInterval);
-                    alert('Disarmed! The bomb is safe.');
-                    document.getElementById('time').style.color = '#0f0';
-                    document.getElementById('timer').innerText = 'Bomb Disarmed';
-                }
-            }
-
-            startRandomizing();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
